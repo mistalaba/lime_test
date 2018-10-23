@@ -18,7 +18,7 @@ django-crispy-forms==1.6.1
 django-environ==0.4.4
 django-model-utils==3.0.0
 django-storages==1.6.5
-django==1.10.8
+django==1.11.16
 docutils==0.14            # via botocore
 fabric3==1.13.1.post1
 gevent==1.2.2
