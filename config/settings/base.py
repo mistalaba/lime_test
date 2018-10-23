@@ -40,6 +40,7 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     'crispy_forms',  # Form layouts
     'sorl.thumbnail',
+    'rest_framework',
 ]
 
 # Apps specific for this project go here.
@@ -233,4 +234,12 @@ LOGGING = {
             'level':'DEBUG',
         },
     }
+}
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ]
 }
