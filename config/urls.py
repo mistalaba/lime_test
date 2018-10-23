@@ -18,7 +18,7 @@ if settings.DEBUG:
     from django.contrib.staticfiles.storage import staticfiles_storage
     from django.views.generic.base import RedirectView
     # favicon_url = staticfiles_storage.url('favicon/')
-    favicon_url = join(str(settings.ROOT_DIR), 'ibiza_comunidad/static/favicon/')
+    favicon_url = join(str(settings.ROOT_DIR), 'lime_test/static/favicon/')
     urlpatterns += [
         url(r'^favicon\.ico$', serve, {'document_root': favicon_url, 'path': 'favicon.ico'}),
         url(r'^apple-touch-icon\.png$', serve, {'document_root': favicon_url, 'path': 'apple-touch-icon.png'}),
