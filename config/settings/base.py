@@ -80,9 +80,9 @@ MANAGERS = ADMINS
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 SITE_ID = 1
 
-TIME_ZONE = 'Europe/Madrid'
-# LANGUAGE_CODE = 'es'
 LANGUAGE_CODE = 'en-us'
+
+TIME_ZONE = 'Europe/Stockholm'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
