@@ -1,0 +1,8 @@
+First time installing the project, activate the virtual environment and add the symlinks:
+
+$ mv $VIRTUAL_ENV/bin/postactivate $VIRTUAL_ENV/bin/postactivate_org
+$ ln -s `pwd`/_virtualenv/postactivate_xxx $VIRTUAL_ENV/bin/postactivate
+(where xxx is local/prod/test)
+
+$ mv $VIRTUAL_ENV/bin/predeactivate $VIRTUAL_ENV/bin/predeactivate_org
+$ ln -s `pwd`/_virtualenv/predeactivate $VIRTUAL_ENV/bin/predeactivate

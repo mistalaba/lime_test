@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# This idea is taken from https://gist.github.com/manuganji/9069466 and http://stackoverflow.com/questions/9554087/setting-an-environment-variable-in-virtualenv:
+# virtualenv postactivate and postdeactivate files for django. Place these files at $VIRTUAL_ENV/bin. That is inside the bin folder inside the virtualenv directory
+# Symlink the postactivate and postdeactivate
+
+export DJANGO_SETTINGS_MODULE=config.settings.production
+echo "postactivate: Set DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE"
