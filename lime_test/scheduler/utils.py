@@ -79,6 +79,9 @@ def csv_import(file_obj):
 
 
 def duplicates(file_obj):
+    """
+    Sanity check to see if there's any duplicate meetings
+    """
     with open(file_obj, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=';')
         meetings = []
