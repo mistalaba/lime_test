@@ -155,6 +155,20 @@ def show_available_slots(participant_list, earliest_datetime, latest_datetime, t
     # Remove unavailable ranges
     meetings = Schedule.objects.filter(participant__participant_id__in=participant_list).filter(end__gte=available_range[0], start__lte=available_range[1]).order_by('start')
     unavailable_ranges = [(m.start, m.end) for m in meetings]
+
+    # Add office hours
+    office_hour_ranges = []
+    start_date = from_dt
+    while start_date.date() <= to_dt.date():
+        current_day = start_date
+        office_hour_ranges.append(
+            (current_day.replace(hour=0, minute=0), current_day.replace(hour=office_hours[0], minute=0)))
+        office_hour_ranges.append(
+            (current_day.replace(hour=office_hours[1], minute=0), current_day.replace(hour=0, minute=0) + timedelta(days=1)))
+        start_date += timedelta(days=1)
+    unavailable_ranges.extend(office_hour_ranges)
+    unavailable_ranges.sort()
+
     # Merge overlapping meetings
     unavailable_ranges = merge_unavailable_ranges(unavailable_ranges)
 
