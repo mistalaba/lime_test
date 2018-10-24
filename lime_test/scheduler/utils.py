@@ -151,8 +151,8 @@ def show_available_slots(participant_list, earliest_datetime, latest_datetime, t
 
     # Get range between earliest_datetime, latest_datetime
     available_range = [from_dt, to_dt - duration_td]
+
     # Remove unavailable ranges
-    import ipdb; ipdb.set_trace()
     meetings = Schedule.objects.filter(participant__participant_id__in=participant_list).filter(end__gte=available_range[0], start__lte=available_range[1]).order_by('start')
     unavailable_ranges = [(m.start, m.end) for m in meetings]
     # Merge overlapping meetings
