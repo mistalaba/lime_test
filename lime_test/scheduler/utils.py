@@ -102,3 +102,26 @@ def merge_dateranges(range1, range2):
     if overlapping_dateranges(range1, range2):
         return (min(range1[0], range2[0]), max(range1[1], range2[1]))
 
+# tmp_range = [
+#     (datetime(2015, 2, 5, 9, 0), datetime(2015, 2, 5, 12, 0)),
+#     (datetime(2015, 2, 5, 12, 30), datetime(2015, 2, 5, 14, 0)),
+#     (datetime(2015, 2, 5, 14, 30), datetime(2015, 2, 5, 16, 0)),
+# ]
+def merge_unavailable_ranges(rng):
+    """
+    Takes the list of unavailable ranges and merges them. This is used if there's
+    multiple participants with overlapping meetings.
+    """
+    for i, r in enumerate(rng):
+        try:
+            if overlapping_dateranges(r, rng[i+1]):
+                rng[i] = merge_dateranges(r, rng[i+1])
+                rng.pop(i+1)
+                try:
+                    merge_unavailable_ranges(rng)
+                except IndexError:
+                    pass
+        except IndexError:
+            pass
+    return rng
+
