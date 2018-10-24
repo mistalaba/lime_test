@@ -14,11 +14,12 @@ class Participant(models.Model):
 class Schedule(models.Model):
     class Meta:
         indexes = [models.Index(fields=['meeting_notes'])]
+        ordering = ['start']
 
-    participant = models.ForeignKey('Participant', on_delete=models.CASCADE)
+    participant = models.ForeignKey('Participant', on_delete=models.CASCADE, related_name='schedule')
     start = models.DateTimeField()
     end = models.DateTimeField()
     meeting_notes = models.CharField(max_length=512)
 
     def __str__(self):
-        return self.meeting_notes
+        return "{} - {}".format(self.start.isoformat(), self.end.isoformat())
