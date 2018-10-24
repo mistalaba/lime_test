@@ -10,12 +10,14 @@ logger = logging.getLogger(__name__)
 
 
 
-def str_to_datetime(input):
+def str_to_datetime(datestring, tz):
     try:
         # Make string to datetime object
-        dt = parser.parse(input)
+        dt = parser.parse(datestring)
         # Make aware
-        dt = pytz.utc.localize(dt)
+        dt = pytz.timezone(tz).localize(dt)
+        # dt = pytz.utc.localize(dt)
+
         return dt
     except:
         raise
@@ -65,8 +67,8 @@ def csv_import(file_obj):
                     continue
                 # Add meeting
                 try:
-                    meeting_start = str_to_datetime(row[1])
-                    meeting_end = str_to_datetime(row[2])
+                    meeting_start = str_to_datetime(row[1], 'UTC')
+                    meeting_end = str_to_datetime(row[2], 'UTC')
                     meeting, created = Schedule.objects.get_or_create(
                         meeting_notes=row[3], defaults={'participant': participant, 'start': meeting_start, 'end': meeting_end}
                     )
@@ -136,27 +138,27 @@ def show_available_slots(participant_list, earliest_datetime, latest_datetime, t
     participants_list: ['id1', 'id2', 'id3']
     earliest_datetime = '2015-01-01 08:00'
     latest_datetime = '2015-01-01 17:00'
-    tz: xxx
-    duration=30 (minutes)
+    tz: 'xxx'
+    duration=30 (in minutes)
     office_hours=[8, 17] (start/end hour of office hours)
 
     Return time slots between earliest and latest where all participants can attend the meeting, half hour intervals.
     """
-    from_dt = str_to_datetime(earliest_datetime)
-    to_dt = str_to_datetime(latest_datetime)
+    local_tz = pytz.timezone(tz)
+    from_dt = str_to_datetime(earliest_datetime, tz)
+    to_dt = str_to_datetime(latest_datetime, tz)
     duration_td = timedelta(minutes=duration)
-
-    time_slots = []
-    slot_start = from_dt
 
     # Get range between earliest_datetime, latest_datetime
     available_range = [from_dt, to_dt - duration_td]
 
     # Remove unavailable ranges
     meetings = Schedule.objects.filter(participant__participant_id__in=participant_list).filter(end__gte=available_range[0], start__lte=available_range[1]).order_by('start')
-    unavailable_ranges = [(m.start, m.end) for m in meetings]
 
-    # Add office hours
+    # Not sure if you're supposed to convert the UTC meetings to local timezone, but let's do it anyway.
+    unavailable_ranges = [(m.start.astimezone(local_tz), m.end.astimezone(local_tz)) for m in meetings]
+
+    # Add office hours to unavailable ranges
     office_hour_ranges = []
     start_date = from_dt
     while start_date.date() <= to_dt.date():
