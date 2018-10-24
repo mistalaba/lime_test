@@ -2,6 +2,7 @@ import csv
 import logging
 from dateutil import parser
 import pytz
+from datetime import datetime, timedelta
 
 from .models import Participant, Schedule
 
@@ -18,6 +19,7 @@ def str_to_datetime(input):
         return dt
     except:
         raise
+
 
 def overlapping_dateranges(range1, range2):
     """
@@ -98,9 +100,12 @@ def duplicates(file_obj):
     for meeting in meetings:
         if meeting['times'] > 1:
             print(meeting)
+
+
 def merge_dateranges(range1, range2):
     if overlapping_dateranges(range1, range2):
         return (min(range1[0], range2[0]), max(range1[1], range2[1]))
+
 
 # tmp_range = [
 #     (datetime(2015, 2, 5, 9, 0), datetime(2015, 2, 5, 12, 0)),
@@ -125,3 +130,60 @@ def merge_unavailable_ranges(rng):
             pass
     return rng
 
+
+def show_available_slots(participant_list, earliest_datetime, latest_datetime, tz='UTC', duration=30, office_hours=[8, 17]):
+    """
+    participants_list: ['id1', 'id2', 'id3']
+    earliest_datetime = '2015-01-01 08:00'
+    latest_datetime = '2015-01-01 17:00'
+    tz: xxx
+    duration=30 (minutes)
+    office_hours=[8, 17] (start/end hour of office hours)
+
+    Return time slots between earliest and latest where all participants can attend the meeting, half hour intervals.
+    """
+    from_dt = str_to_datetime(earliest_datetime)
+    to_dt = str_to_datetime(latest_datetime)
+    duration_td = timedelta(minutes=duration)
+
+    time_slots = []
+    slot_start = from_dt
+
+    # Get range between earliest_datetime, latest_datetime
+    available_range = [from_dt, to_dt - duration_td]
+    # Remove unavailable ranges
+    import ipdb; ipdb.set_trace()
+    meetings = Schedule.objects.filter(participant__participant_id__in=participant_list).filter(end__gte=available_range[0], start__lte=available_range[1]).order_by('start')
+    unavailable_ranges = [(m.start, m.end) for m in meetings]
+    # Merge overlapping meetings
+    unavailable_ranges = merge_unavailable_ranges(unavailable_ranges)
+
+    # Get list of available ranges from available range - unavailable_ranges
+    # IE [(s,e), (s,e)...]
+    # Create new list, available_ranges
+    available_ranges = []
+    start_range = from_dt
+    end_range = to_dt
+    for rr in unavailable_ranges:
+        current_range = (start_range, rr[0])
+        available_ranges.append(current_range)
+        start_range = rr[1]
+        if start_range > end_range:
+            break
+    # Last part
+    if start_range < end_range:
+        available_ranges.append((start_range, end_range))
+
+
+    # Return slots that are available
+    # Take every available range and get the slots from them
+    available_slots = []
+    for ar in available_ranges:
+        current_slot = (ar[0], ar[0] + duration_td)
+        while current_slot[1] <= ar[1]:
+            available_slots.append(current_slot)
+            current_slot = (current_slot[1], current_slot[1] + duration_td)
+
+    logger.debug("unavailable_ranges: {}".format(unavailable_ranges))
+    logger.debug("available_ranges: {}".format(available_ranges))
+    return available_slots
