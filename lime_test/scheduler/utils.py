@@ -19,6 +19,16 @@ def str_to_datetime(input):
     except:
         raise
 
+def overlapping_dateranges(range1, range2):
+    """
+    Returns True if ranges overlap.
+    Taken from http://wiki.c2.com/?TestIfDateRangesOverlap
+    Exception: You can apparently go from one meeting to another in 0 minutes
+    """
+    # return (range1[0] <= range2[1] and range2[0] <= range1[1])
+    return (range1[0] < range2[1] and range2[0] < range1[1])
+
+
 def csv_import(file_obj):
     with open(file_obj, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=';')
