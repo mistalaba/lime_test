@@ -27,7 +27,7 @@ def overlapping_dateranges(range1, range2):
     """
     Returns True if ranges overlap.
     Taken from http://wiki.c2.com/?TestIfDateRangesOverlap
-    Exception: You can apparently go from one meeting to another in 0 minutes
+    Anomaly: You can apparently go from one meeting to another in 0 minutes, that's great!
     """
     # return (range1[0] <= range2[1] and range2[0] <= range1[1])
     return (range1[0] < range2[1] and range2[0] < range1[1])
@@ -175,8 +175,6 @@ def show_available_slots(participant_list, earliest_datetime, latest_datetime, t
     unavailable_ranges = merge_unavailable_ranges(unavailable_ranges)
 
     # Get list of available ranges from available range - unavailable_ranges
-    # IE [(s,e), (s,e)...]
-    # Create new list, available_ranges
     available_ranges = []
     start_range = from_dt
     end_range = to_dt
