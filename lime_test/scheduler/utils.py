@@ -98,3 +98,7 @@ def duplicates(file_obj):
     for meeting in meetings:
         if meeting['times'] > 1:
             print(meeting)
+def merge_dateranges(range1, range2):
+    if overlapping_dateranges(range1, range2):
+        return (min(range1[0], range2[0]), max(range1[1], range2[1]))
+
