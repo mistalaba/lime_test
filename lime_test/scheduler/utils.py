@@ -2,6 +2,7 @@ import csv
 import logging
 from dateutil import parser
 import pytz
+from datetime import datetime, timedelta
 
 from .models import Participant, Schedule
 
@@ -9,15 +10,28 @@ logger = logging.getLogger(__name__)
 
 
 
-def str_to_datetime(input):
+def str_to_datetime(datestring, tz):
     try:
         # Make string to datetime object
-        dt = parser.parse(input)
+        dt = parser.parse(datestring)
         # Make aware
-        dt = pytz.utc.localize(dt)
+        dt = pytz.timezone(tz).localize(dt)
+        # dt = pytz.utc.localize(dt)
+
         return dt
     except:
         raise
+
+
+def overlapping_dateranges(range1, range2):
+    """
+    Returns True if ranges overlap.
+    Taken from http://wiki.c2.com/?TestIfDateRangesOverlap
+    Anomaly: You can apparently go from one meeting to another in 0 minutes, that's great!
+    """
+    # return (range1[0] <= range2[1] and range2[0] <= range1[1])
+    return (range1[0] < range2[1] and range2[0] < range1[1])
+
 
 def csv_import(file_obj):
     with open(file_obj, newline='') as csvfile:
@@ -53,8 +67,8 @@ def csv_import(file_obj):
                     continue
                 # Add meeting
                 try:
-                    meeting_start = str_to_datetime(row[1])
-                    meeting_end = str_to_datetime(row[2])
+                    meeting_start = str_to_datetime(row[1], 'UTC')
+                    meeting_end = str_to_datetime(row[2], 'UTC')
                     meeting, created = Schedule.objects.get_or_create(
                         meeting_notes=row[3], defaults={'participant': participant, 'start': meeting_start, 'end': meeting_end}
                     )
@@ -69,6 +83,9 @@ def csv_import(file_obj):
 
 
 def duplicates(file_obj):
+    """
+    Sanity check to see if there's any duplicate meetings
+    """
     with open(file_obj, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=';')
         meetings = []
@@ -85,3 +102,102 @@ def duplicates(file_obj):
     for meeting in meetings:
         if meeting['times'] > 1:
             print(meeting)
+
+
+def merge_dateranges(range1, range2):
+    if overlapping_dateranges(range1, range2):
+        return (min(range1[0], range2[0]), max(range1[1], range2[1]))
+
+
+# tmp_range = [
+#     (datetime(2015, 2, 5, 9, 0), datetime(2015, 2, 5, 12, 0)),
+#     (datetime(2015, 2, 5, 12, 30), datetime(2015, 2, 5, 14, 0)),
+#     (datetime(2015, 2, 5, 14, 30), datetime(2015, 2, 5, 16, 0)),
+# ]
+def merge_unavailable_ranges(rng):
+    """
+    Takes the list of unavailable ranges and merges them. This is used if there's
+    multiple participants with overlapping meetings.
+    """
+    for i, r in enumerate(rng):
+        try:
+            if overlapping_dateranges(r, rng[i+1]):
+                rng[i] = merge_dateranges(r, rng[i+1])
+                rng.pop(i+1)
+                try:
+                    merge_unavailable_ranges(rng)
+                except IndexError:
+                    pass
+        except IndexError:
+            pass
+    return rng
+
+
+def show_available_slots(participant_list, earliest_datetime, latest_datetime, tz='UTC', duration=30, office_hours=[8, 17]):
+    """
+    participants_list: ['id1', 'id2', 'id3']
+    earliest_datetime = '2015-01-01 08:00'
+    latest_datetime = '2015-01-01 17:00'
+    tz: 'xxx'
+    duration=30 (in minutes)
+    office_hours=[8, 17] (start/end hour of office hours)
+
+    Return time slots between earliest and latest where all participants can attend the meeting, half hour intervals.
+    """
+    local_tz = pytz.timezone(tz)
+    from_dt = str_to_datetime(earliest_datetime, tz)
+    to_dt = str_to_datetime(latest_datetime, tz)
+    duration_td = timedelta(minutes=duration)
+
+    # Get range between earliest_datetime, latest_datetime
+    available_range = [from_dt, to_dt - duration_td]
+
+    # Remove unavailable ranges
+    meetings = Schedule.objects.filter(participant__participant_id__in=participant_list).filter(end__gte=available_range[0], start__lte=available_range[1]).order_by('start')
+
+    # Not sure if you're supposed to convert the UTC meetings to local timezone, but let's do it anyway.
+    unavailable_ranges = [(m.start.astimezone(local_tz), m.end.astimezone(local_tz)) for m in meetings]
+
+    # Add office hours to unavailable ranges
+    office_hour_ranges = []
+    start_date = from_dt
+    while start_date.date() <= to_dt.date():
+        current_day = start_date
+        office_hour_ranges.append(
+            (current_day.replace(hour=0, minute=0), current_day.replace(hour=office_hours[0], minute=0)))
+        office_hour_ranges.append(
+            (current_day.replace(hour=office_hours[1], minute=0), current_day.replace(hour=0, minute=0) + timedelta(days=1)))
+        start_date += timedelta(days=1)
+    unavailable_ranges.extend(office_hour_ranges)
+    unavailable_ranges.sort()
+
+    # Merge overlapping meetings
+    unavailable_ranges = merge_unavailable_ranges(unavailable_ranges)
+
+    # Get list of available ranges from available range - unavailable_ranges
+    available_ranges = []
+    start_range = from_dt
+    end_range = to_dt
+    for rr in unavailable_ranges:
+        current_range = (start_range, rr[0])
+        available_ranges.append(current_range)
+        start_range = rr[1]
+        if start_range > end_range:
+            break
+    # Last part
+    if start_range < end_range:
+        available_ranges.append((start_range, end_range))
+
+
+    # Return slots that are available
+    # Take every available range and get the slots from them
+    available_slots = []
+    for ar in available_ranges:
+        current_slot = (ar[0], ar[0] + duration_td)
+        while current_slot[1] <= ar[1]:
+            available_slots.append(current_slot)
+            current_slot = (current_slot[1], current_slot[1] + duration_td)
+
+    logger.debug("unavailable_ranges: {}".format(unavailable_ranges))
+    logger.debug("available_ranges: {}".format(available_ranges))
+    return available_slots
