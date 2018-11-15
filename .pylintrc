@@ -1,0 +1,14 @@
+[MASTER]
+load-plugins=pylint_common, pylint_django, pylint_celery
+
+[FORMAT]
+max-line-length=120
+
+[MESSAGES CONTROL]
+disable=missing-docstring,invalid-name,import-error,django-not-available,unused-argument,max-line-length,no-self-use,too-few-public-methods,C1001,W0232,line-too-long
+
+[DESIGN]
+max-parents=13
+
+[TYPECHECK]
+generated-members=REQUEST,acl_users,aq_parent,"[a-zA-Z]+_set{1,2}",save,delete

@@ -40,10 +40,12 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     'crispy_forms',  # Form layouts
     'sorl.thumbnail',
+    'rest_framework',
 ]
 
 # Apps specific for this project go here.
 LOCAL_APPS = [
+    'scheduler',
 ]
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -79,9 +81,9 @@ MANAGERS = ADMINS
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 SITE_ID = 1
 
-TIME_ZONE = 'Europe/Madrid'
-# LANGUAGE_CODE = 'es'
 LANGUAGE_CODE = 'en-us'
+
+TIME_ZONE = 'Europe/Stockholm'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
@@ -232,4 +234,12 @@ LOGGING = {
             'level':'DEBUG',
         },
     }
+}
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ]
 }

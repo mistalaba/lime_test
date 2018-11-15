@@ -1,16 +1,19 @@
 argon2-cffi==16.3.0
 awesome-slugify==1.6.5
 boto3==1.4.7
-django==1.10.8 # pyup: >=1.10,<1.11
+django==1.11.16
 django-crispy-forms==1.6.1
 django-environ==0.4.4
+django-filter
 django-model-utils==3.0.0
 django-storages==1.6.5
+djangorestframework
 Fabric3==1.13.1.post1
 gevent==1.2.2
 gunicorn==19.7.1
 ipdb==0.10.3
 ipython==6.1.0
+markdown
 Pillow==4.2.1
 pip-tools==3.1.0
 psycopg2==2.7.3.1

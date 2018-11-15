@@ -8,8 +8,12 @@ from django.views import defaults as default_views
 from django.views.decorators.cache import never_cache
 from django.views.static import serve
 
+from scheduler import views
+
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^timeslots/$', views.available_timeslots, name='available_timeslots'),
+    url(r'^api-auth/', include('rest_framework.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
@@ -18,7 +22,7 @@ if settings.DEBUG:
     from django.contrib.staticfiles.storage import staticfiles_storage
     from django.views.generic.base import RedirectView
     # favicon_url = staticfiles_storage.url('favicon/')
-    favicon_url = join(str(settings.ROOT_DIR), 'ibiza_comunidad/static/favicon/')
+    favicon_url = join(str(settings.ROOT_DIR), 'lime_test/static/favicon/')
     urlpatterns += [
         url(r'^favicon\.ico$', serve, {'document_root': favicon_url, 'path': 'favicon.ico'}),
         url(r'^apple-touch-icon\.png$', serve, {'document_root': favicon_url, 'path': 'apple-touch-icon.png'}),

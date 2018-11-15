@@ -1,0 +1,40 @@
+## Overview
+This is a test used for Lime.
+
+## Installation
+ - Make sure you have Postgres
+ - Clone repo
+ - Create and activate a virtual environment (I'm using virtualenvwrapper)
+ - Install DJANGO_SETTINGS_MODULE in virtualenvwrapper by following the instructions in `_virtualenv/README`. If you're not using virtualenvwrapper, you can start the dev server using `python manage.py runserver --settings=config.settings.local`
+ - Copy env.example to .env
+ - Install pip-tools
+ - Run `pip-sync requirements/local_compiled.txt`
+ - Run `python manage.py migrate`
+ - Start server by running `python manage.py runserver`
+
+## Usage
+I'm running all commands through Django shell (`python manage.py shell`).
+
+### Import data
+
+    import os
+    from scheduler.utils import csv_import
+    f = os.path.abspath('_assets/freebusy.txt')
+    csv_import(f)
+Now the database is populated.
+
+### Get available slots
+I didn't manage to finish setting up the DRF view, so you have to run the method instead.
+
+    from scheduler.utils import show_available_slots
+    show_available_slots(['304135142610179002849599700468693189141', '62104963995056120934917791037311595320'], '2015-02-05 6:00', '2015-02-06 20:00', duration=60, tz='Europe/Stockholm')
+
+This will generate list of nested tuples, where each tuple is the start and end of an available time slot for the participant(s):
+
+    [(datetime.datetime(2015, 2, 5, 8, 0, tzinfo=<DstTzInfo 'Europe/Stockholm' CET+1:00:00 STD>), datetime.datetime(2015, 2, 5, 9, 0, tzinfo=<DstTzInfo 'Europe/Stockholm' CET+1:00:00 STD>)),
+    (datetime.datetime(2015, 2, 5, 9, 0, tzinfo=<DstTzInfo 'Europe/Stockholm' CET+1:00:00 STD>), datetime.datetime(2015, 2, 5, 10, 0, tzinfo=<DstTzInfo 'Europe/Stockholm' CET+1:00:00 STD>)),
+    (datetime.datetime(2015, 2, 5, 13, 0, tzinfo=<DstTzInfo 'Europe/Stockholm' CET+1:00:00 STD>), datetime.datetime(2015, 2, 5, 14, 0, tzinfo=<DstTzInfo 'Europe/Stockholm' CET+1:00:00 STD>)),
+    (datetime.datetime(2015, 2, 5, 16, 0, tzinfo=<DstTzInfo 'Europe/Stockholm' CET+1:00:00 STD>), datetime.datetime(2015, 2, 5, 17, 0, tzinfo=<DstTzInfo 'Europe/Stockholm' CET+1:00:00 STD>)),
+    (datetime.datetime(2015, 2, 6, 9, 0, tzinfo=<DstTzInfo 'Europe/Stockholm' CET+1:00:00 STD>), datetime.datetime(2015, 2, 6, 10, 0, tzinfo=<DstTzInfo 'Europe/Stockholm' CET+1:00:00 STD>))]
+
+Enjoy! ❤
