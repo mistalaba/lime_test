@@ -8,8 +8,12 @@ from django.views import defaults as default_views
 from django.views.decorators.cache import never_cache
 from django.views.static import serve
 
+from scheduler import views
+
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^timeslots/$', views.available_timeslots, name='available_timeslots'),
+    url(r'^api-auth/', include('rest_framework.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
