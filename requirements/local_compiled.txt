@@ -84,5 +84,5 @@ traitlets==4.3.2          # via ipython
 unidecode==0.4.21         # via awesome-slugify
 urllib3==1.22             # via requests
 wcwidth==0.1.7            # via prompt-toolkit
-werkzeug==0.12.2
+werkzeug==0.15.3
 wheel==0.30.0
