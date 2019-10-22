@@ -14,7 +14,7 @@ gunicorn==19.7.1
 ipdb==0.10.3
 ipython==6.1.0
 markdown
-Pillow==4.2.1
+Pillow==6.2.0
 pip-tools==3.1.0
 psycopg2==2.7.3.1
 pytz==2017.2
